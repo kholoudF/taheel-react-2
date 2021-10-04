@@ -8,7 +8,7 @@ import CreatefinalLicense from 'src/pages/services/final-license/CreateFinalLice
 import CreateFinalLicenseRenewal from 'src/pages/services/final-license/CreateFinalLicenseRenewal';
 import CustomerList from 'src/pages/CustomerList';
 import Dashboard from 'src/pages/Dashboard';
-// import Drafts from 'src/pages/Drafts';
+import Drafts from 'src/pages/Drafts';
 import Login from 'src/pages/UserAuthentication/Login/Login';
 import NotFound from 'src/pages/NotFound';
 import ProductList from 'src/pages/ProductList';
@@ -27,13 +27,15 @@ import AddCommissioner from './pages/CentersManagement/components/AddCommissione
 import CommissionersManagement from './pages/CentersManagement/components/CommissionersManagement';
 import DownloadDoc from './pages/UserAuthentication/Login/components/DownloadDoc';
 import Orders from './pages/Orders';
+import { LICENSE_FORM_TYPES, REQUEST_STATUS } from 'src/utils/enums'
+import TransferCenterLocationRequest from './pages/services/transfer-center-location/services/TransferCenterLocationRequest';
 
 const routes = (isLoggedIn) => [
   {
     path: '/',
     element: <MainLayout />,
     children: [
-      { path: 'login', element: isLoggedIn === "" ? <Login /> : <Navigate to="/app/dashboard" />},
+      { path: 'login', element: isLoggedIn === "" ? <Login /> : <Navigate to="/app/dashboard" /> },
       { path: 'otplogin', element: <OTPLogin /> },
       { path: 'downloadDoc', element: <DownloadDoc /> },
       { path: 'Home', element: <Home /> },
@@ -64,7 +66,8 @@ const routes = (isLoggedIn) => [
       // { path: 'drafts', element: <Drafts /> },
       { path: 'products', element: <ProductList /> },
       { path: 'settings', element: <Settings /> },
-      { path: 'orders', element: <Orders /> },
+      { path: 'orders', element: <Orders type={LICENSE_FORM_TYPES.ALL} /> },
+      { path: 'drafts', element: <Orders type={LICENSE_FORM_TYPES.DRAFT} /> },
 
 
       { path: '*', element: <Navigate to="/404" /> }
@@ -79,6 +82,8 @@ const routes = (isLoggedIn) => [
       { path: 'updatefinallicenserenewal', element: <CreatefinalLicense /> },
       { path: 'editfinallicense', element: <CreatefinalLicense /> },
       { path: 'finallicenserenewal', element: <CreateFinalLicenseRenewal /> },
+      { path: 'transfercenter', element: <TransferCenterLocationRequest /> },
+
       { path: '*', element: <Navigate to="/404" /> }
     ]
   }

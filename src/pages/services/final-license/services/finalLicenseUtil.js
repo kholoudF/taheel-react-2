@@ -19,6 +19,9 @@ import {
 } from '@material-ui/core';
 import { checkIsNumber } from 'src/utils/inputValidator';
 
+const staffTypes = ["معلم تربية خاصة", "أخصائي اجتماعي", "مراقب اجتماعي", "حارس", "عامل تنظيفات", "مشرف فني عام", "اخصائي نفسي و توجيه اجتماعي", "عامل رعاية شخصية", "مدير", "سائق", "مرافق سائق", "أخصائي علاج طبيعي", "أخصائي علاج وظيفي", "أخصائي نطق و تخاطب", "ممرض"]
+const medicalStaffTypes = ['أخصائي علاج طبيعي', 'أخصائي علاج وظيفي', 'ممرض', 'أخصائي نطق و تخاطب']
+
 const CenterDetailsValidation = values => {
   console.log("values", isNaN(values.CRNumber))
   var msg = {}
@@ -33,8 +36,8 @@ const CenterDetailsValidation = values => {
 
 const capacityValidation = values => {
   var msg = {}
-  console.log(' values.beneficiariesNum', typeof (values.beneficiariesNum), 'values.capacity', typeof (values.capacity))
-  console.log(' values.buildingArea', typeof (values.buildingArea), 'values.basementArea', typeof (values.basementArea))
+  console.log('capacityValidation :: values.beneficiariesNum', typeof (values.beneficiariesNum), 'values.capacity', typeof (values.capacity))
+  console.log('capacityValidation :: values.buildingArea', typeof (values.buildingArea), 'values.basementArea', typeof (values.basementArea))
   if (!values.beneficiariesNum)
     msg.beneficiariesNum = required
   else if (parseInt(values.beneficiariesNum) <= 0) {
@@ -53,7 +56,7 @@ const capacityValidation = values => {
     msg.buildingArea = 'يجب ان يكون مساحة مسطح البناء عدد صحيح'
   }
 
-  if (!values.basementArea)
+  if (!values.basementArea && values.basementArea != 0)
     msg.basementArea = required
   else if (parseInt(values.basementArea) < 0) {
       msg.basementArea = 'يجب ان يكون مساحة القبو اكبر من صفر'
@@ -71,22 +74,22 @@ const capacityValidation = values => {
 
 const RequirementsValidation = values => {
   var msg = {}
-  if (!values.OperationalPlan)
+  if (!values.OperationalPlan || !values.OperationalPlan[0])
     msg.OperationalPlan = "يرجى ارفاق هذا الملف";
 
-  if (!values.ExecutivePlan)
+  if (!values.ExecutivePlan || !values.ExecutivePlan[0])
     msg.ExecutivePlan = "يرجى ارفاق هذا الملف";
 
-  if (!values.OfficeReport)
+  if (!values.OfficeReport || !values.OfficeReport[0])
     msg.OfficeReport = "يرجى ارفاق هذا الملف";
 
-  if (!values.SecurityReport)
+  if (!values.SecurityReport || !values.SecurityReport[0])
     msg.SecurityReport = "يرجى ارفاق هذا الملف";
 
-  if (!values.Furniture)
+  if (!values.Furniture || !values.Furniture[0])
     msg.Furniture = "يرجى ارفاق هذا الملف";
 
-  if (!values.FinancialGuaranteeAtt)
+  if (!values.FinancialGuaranteeAtt || !values.FinancialGuaranteeAtt[0])
     msg.FinancialGuaranteeAtt = "يرجى ارفاق هذا الملف";
 
   return msg;
@@ -213,7 +216,7 @@ const DownloadButt = ({ index, docID, name, label }) => {
       </TableRow>
     </>)
 }
-const DownloadButtTable = ({ docIDs, name, label, idx }) => {
+const DownloadButtTable = ({ docIDs, name, label }) => {
 
   return (
     <>
@@ -230,7 +233,7 @@ const DownloadButtTable = ({ docIDs, name, label, idx }) => {
               <TableBody>
 
                 {[].concat(docIDs).map((docID, index) => (
-                  < DownloadButt key={docID + "_" + index} index={index} docID={docID} name={name} label={label} />
+                  <DownloadButt key={!docID.id ? docID.id : docID  + "_" + index} index={index} docID={docID.id ? docID.id : docID} name={name} label={label} />
                 ))
                 }
               </TableBody>
@@ -289,7 +292,7 @@ const validateAddStaffForm = (values, rowIndex, SAForm, forignForm) => {
     if (!cv) {
       return "يرجى رفع السيرة الذاتية";
     }
-    if (!MedicalPractice && ['أخصائي علاج طبيعي', 'أخصائي علاج وظيفي', 'ممرض', 'أخصائي نطق و تخاطب'].includes(staffTypes)) {
+    if (!MedicalPractice && medicalStaffTypes.includes(staffTypes)) {
       return "يرجى رفع رخصة المزاولة";
     }
 
@@ -310,10 +313,9 @@ const getStaff = (data) => {
     professionalLicense: 'MedicalPractice',
   }
 
-  const staffTypes = ["معلم تربية خاصة", "أخصائي اجتماعي", "مراقب اجتماعي", "حارس", "عامل تنظيفات", "مشرف فني عام", "اخصائي نفسي و توجيه اجتماعي", "عامل رعاية شخصية", "مدير", "سائق", "مرافق سائق", "أخصائي علاج طبيعي", "أخصائي علاج وظيفي", "أخصائي نطق و تخاطب", "ممرض"]
   var staff = JSON.parse(JSON.stringify(data))
 
-  staff.map((customer) => {
+  staff && staff.map((customer) => {
     Object.keys(customer).map((key) => {
       if (customer[key]) {
         const newKey = newKeys[key] || key;
@@ -341,8 +343,9 @@ const getStaff = (data) => {
         }
         else if (key === 'StaffType')
           customer[newKey] = staffTypes[customer[key] - 1]
-        else if (['professionalLicense', 'educationQualifications', 'CV'].includes(key))
-          customer[newKey] = [customer[key].id]
+        else if (['professionalLicense', 'educationQualifications', 'CV'].includes(key)){
+          customer[newKey] = [!!customer[key].id ? customer[key].id : customer[key]]
+        }
         else
           customer[newKey] = customer[key];
         if (!customer[newKey] || newKey !== key)
