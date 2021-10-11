@@ -1,4 +1,5 @@
 import { checkIsfilled } from 'src/utils/inputValidator';
+import { getDocId } from 'src/utils/TaheelUtils';
 import { v4 as uuid } from 'uuid';
 
 const getCenterType = (value) => {
@@ -280,7 +281,7 @@ export default
             name: 'operationPlan',
             valueFunc: (values) => (values?.licenseDoc),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -294,7 +295,7 @@ export default
             name: 'operationPlan',
             valueFunc: (values) => (values?.operationPlan?.id),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -309,7 +310,7 @@ export default
             name: 'ExecutivePlan',
             valueFunc: (values) => (values?.executivePlan?.id),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -324,7 +325,7 @@ export default
             name: 'OfficeReport',
             valueFunc: (values) => (values?.engineeringPlan?.id), /// check in here !
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -340,7 +341,7 @@ export default
             name: 'SecurityReport',
             valueFunc: (values) => (values?.securityReport?.id),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -354,7 +355,7 @@ export default
             name: 'Furniture',
             valueFunc: (values) => (values?.furniturePhotoZippedFile?.id),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],
@@ -368,7 +369,21 @@ export default
             name: 'financialGuarbteeAtt.id',
             valueFunc: (values) => (values?.financialGuarbteeAtt?.id),
             type: 'file',
-            gridSize: '12',
+            gridSize: '6',
+            sectionName: Sections.Requirements,
+            options: [],
+            validators: [],
+        },
+        {
+            id: uuid(),
+            label: {
+                ar: "مرفقات خدمات الرعاية الصحية",
+                en: 'Health care service documents'
+            },
+            name: 'healthCareServices_r',
+            valueFunc: (values) => (getDocId(values?.healthCareServices_r)),
+            type: 'file',
+            gridSize: '6',
             sectionName: Sections.Requirements,
             options: [],
             validators: [],

@@ -9,8 +9,19 @@ import { TextField as TextFieldFinal, Select } from 'final-form-material-ui';
 import { OnChange } from 'react-final-form-listeners';
 import CenterSummary from './CenterSummary';
 import { CardContent, CircularProgress } from '@mui/material';
+import { useEffect } from 'react';
 
-const FinalLicenseData = ({ setField, renewableLicenses, values, setCenterLicenceNumber, getCentertDetails, showSummary, setShowSummary, isLoading }) => {
+const FinalLicenseData = ({ setField, renewableLicenses, formEdit, values, setCenterLicenceNumber, getCentertDetails, showSummary, setShowSummary, isLoading, setIsEnableNextBtn }) => {
+
+  useEffect(() => {
+    // console.log(`centerLicenceNumber: ${centerLicenceNumber}`)
+    console.log(`values.centerLicenceNumber: ${values.centerLicenceNumber}`)
+     if (values.centerLicenceNumber === 1) {
+       setIsEnableNextBtn(true);
+    }
+    // setIsEnableNextBtn(false);
+
+  }, []);
   console.log("======>values from final: " + JSON.stringify(values))
   console.log("======>valuesrenewableLicenses: " + JSON.stringify(renewableLicenses))
 
@@ -40,7 +51,7 @@ const FinalLicenseData = ({ setField, renewableLicenses, values, setCenterLicenc
                 variant="outlined"
                 className="custom-field"
                 formControlProps={{ fullWidth: true }}
-                disabled={!Array.isArray(renewableLicenses) || !renewableLicenses.length}
+                disabled={!Array.isArray(renewableLicenses) || !renewableLicenses.length || formEdit}
               >
                 <MenuItem value="1" key="1" selected={true}>اختيار</MenuItem>
                 {renewableLicenses.map(item => (
@@ -49,13 +60,16 @@ const FinalLicenseData = ({ setField, renewableLicenses, values, setCenterLicenc
               </Field>
               <OnChange name="centerLicenceNumber">
                 {async (value) => {
-                  console.log(`centerLicenceNumber + ${value}`);
+                  console.log(`onChangecenterLicenceNumber + ${value}`);
                   if (value != 1) {
                     await getCentertDetails(value);
+                    setIsEnableNextBtn(true)
 
                   }
                   else {
                     setShowSummary(false);
+                    setIsEnableNextBtn(false)
+
                   }
                 }}
               </OnChange>

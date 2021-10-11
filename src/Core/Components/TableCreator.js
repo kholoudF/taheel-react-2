@@ -24,11 +24,19 @@ import PropTypes from 'prop-types'
 import IconsTypeEnum from '../Utils/IconsTypeEnum'
 import Fab from '@mui/material/Fab';
 import IconsList from './FieldsInputs/IconsList'
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import { a11yProps } from 'src/Core/Components/FieldsInputs/TabPanel'
 
-export default function TableCreator({ pageTitle, tableTitle, tableShcema, dataTable, totalCount, loading, TPObject, errMessage, otherFunc, navBackUrl, action }) {
+export default function TableCreator({ pageTitle, tableTitle, tableShcema, dataTable, totalCount, loading, TPObject, errMessage, otherFunc, navBackUrl, action, useValue = [] }) {
     const navigateion = useNavigate()
+    const [value, setValue] = useValue
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+    };
     return (
-        <>
+        <Box sx={{ p: 3 }}>
             <Card style={{ padding: "20px", minHeight: "100%" }}>
                 {!!pageTitle ?
                     <>
@@ -87,7 +95,13 @@ export default function TableCreator({ pageTitle, tableTitle, tableShcema, dataT
                                             loading ? (
                                                 <Skeleton animation="wave" height={15} width="20%" style={{ marginBottom: 6 }} />
                                             ) : (
-                                                tableTitle
+                                                Array.isArray(tableTitle) ?
+                                                    <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
+                                                        {tableTitle.map((t, idx) => {
+                                                            return <Tab key={idx} label={t.tableTitle} {...a11yProps(idx)} />
+                                                        })}
+                                                    </Tabs> :
+                                                    tableTitle
                                             )
                                         }
                                             action={action}
@@ -95,83 +109,114 @@ export default function TableCreator({ pageTitle, tableTitle, tableShcema, dataT
                                     <Divider />
                                     <PerfectScrollbar>
                                         <Paper container >
-                                            <Table >
-                                                <TableHead >
-                                                    <TableRow>
-                                                        {tableShcema.schema.map((data) => (
-                                                            <TableCell key={data.id} sortDirection="desc">
-                                                                {loading ?
-                                                                    <Skeleton />
-                                                                    :
-                                                                    (
-                                                                        data.label.ar
-                                                                    )
-                                                                }
-                                                            </TableCell>
-                                                        ))}
-                                                        {!!tableShcema.actions.label ?
-                                                            (
-                                                                <TableCell key="btnsColumn">
-                                                                    {tableShcema.actions.label.ar}
-                                                                </TableCell>
-                                                            ) :
-                                                            ('')
-                                                        }
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {
-                                                        (((loading || !dataTable ? Array.from(new Array(4)) : dataTable).map((responseData, index) => {
-                                                            return (
+                                            {loading ?
+                                                (< Table >
+                                                    <TableHead >
+                                                        <TableRow
+                                                            hover
+                                                        > {
+                                                                (Array.from(new Array(4)).map((d, idx) => (
+
+                                                                    <TableCell key={idx}>
+                                                                        <Skeleton />
+                                                                    </TableCell>
+                                                                )))
+                                                            }
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {
+                                                            (Array.from(new Array(4)).map((d, idx) => (
                                                                 <TableRow
                                                                     hover
-                                                                    key={responseData ? responseData.requestNum : index}
+                                                                    key={idx}
                                                                 >
-                                                                    {tableShcema.schema.map((data, idx) => {
-                                                                        let val = ''
-                                                                        if (!!responseData) {
-                                                                            val = responseData;
-                                                                            val = data.name?.includes(".") ?
-                                                                                data['name'].split('.').map(attrName => (
-                                                                                    val[attrName]
-                                                                                )) :
-                                                                                responseData[data['name']];
-                                                                        }
-                                                                        return (
+                                                                    {
+                                                                        (Array.from(new Array(4)).map((d, idx) => (
                                                                             <TableCell key={idx}>
-                                                                                {responseData ?
-                                                                                    (
-                                                                                        !!data.attrFunc ?
-                                                                                            (
-                                                                                                data.attrFunc(responseData)
-                                                                                            )
-                                                                                            : (
-                                                                                                val
-                                                                                            )
-                                                                                    )
-                                                                                    : (
-                                                                                        <Skeleton />
-                                                                                    )
-                                                                                }
-                                                                            </TableCell>
+                                                                                <Skeleton />
+                                                                            </TableCell>))
                                                                         )
-                                                                    })}
-                                                                    {!loading ? <TableButtonsDraw otherFunc={otherFunc} actions={tableShcema.actions} responseData={responseData} loading={loading} index={index} /> : ''}
+                                                                    }
                                                                 </TableRow>
+                                                            )))
+                                                        }
+                                                    </TableBody>
+                                                </Table>)
+                                                :
+                                                (<Table >
+                                                    <TableHead >
+                                                        <TableRow>
+                                                            {tableShcema.schema.map((data) => (
+                                                                <TableCell key={data.id} sortDirection="desc">
+                                                                    {data.label.ar}
+                                                                </TableCell>
+                                                            ))}
+                                                            {!!tableShcema.actions.label ?
+                                                                (
+                                                                    <TableCell key="btnsColumn">
+                                                                        {tableShcema.actions.label.ar}
+                                                                    </TableCell>
+                                                                ) :
+                                                                ('')
+                                                            }
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {
+                                                            (((dataTable)?.map((responseData, index) => {
+                                                                return (
+                                                                    <TableRow
+                                                                        hover
+                                                                        key={responseData ? responseData.requestNum : index}
+                                                                    >
+                                                                        {tableShcema.schema.map((data, idx) => {
+                                                                            let val = ''
+                                                                            if (!!responseData) {
+                                                                                val = responseData;
+                                                                                val = data.name?.includes(".") ?
+                                                                                    data['name'].split('.').map(attrName => (
+                                                                                        val[attrName]
+                                                                                    )) :
+                                                                                    responseData[data['name']];
+                                                                            }
+                                                                            return (
+                                                                                <TableCell key={idx}>
+                                                                                    {responseData ?
+                                                                                        (
+                                                                                            !!data.attrFunc ?
+                                                                                                (
+                                                                                                    data.attrFunc(responseData)
+                                                                                                )
+                                                                                                : (
+                                                                                                    val
+                                                                                                )
+                                                                                        )
+                                                                                        : (
+                                                                                            <Skeleton />
+                                                                                        )
+                                                                                    }
+                                                                                </TableCell>
+                                                                            )
+                                                                        })}
+                                                                        {!loading ? <TableButtonsDraw otherFunc={otherFunc} actions={tableShcema.actions} responseData={responseData} loading={loading} index={index} /> : ''}
+                                                                    </TableRow>
+                                                                )
+                                                            })
                                                             )
-                                                        })
-                                                        )
-                                                        )
-                                                    }
-                                                    {!loading && dataTable?.length === 0 ? (<TableRow hover>
-                                                        <TableCell colSpan={8} >
-                                                            <p style={{ textAlign: 'center' }} >لا يوجد بيانات </p>
-                                                        </TableCell>
-                                                    </TableRow>) : <></>}
-                                                </TableBody>
-                                            </Table>
+                                                            )
+                                                        }
+                                                        {!loading && (dataTable?.length === 0 || !dataTable) ? (
+                                                            <TableRow hover>
+                                                                <TableCell colSpan={8} >
+                                                                    <p style={{ textAlign: 'center' }} >لا يوجد بيانات </p>
+                                                                </TableCell>
+                                                            </TableRow>) : <></>}
+                                                    </TableBody>
+                                                </Table>)
+                                            }
                                         </Paper>
-                                        {loading ? <Skeleton /> : <PaginationDraw totalCount={totalCount} TPObject={TPObject} loading={loading} />}
+                                        {loading ? <Skeleton /> : dataTable?.length === 0 || !dataTable ? '' : <PaginationDraw totalCount={totalCount} TPObject={TPObject} loading={loading} />}
                                     </PerfectScrollbar>
                                 </Card>
                             </Grid >
@@ -179,7 +224,7 @@ export default function TableCreator({ pageTitle, tableTitle, tableShcema, dataT
                     </Container >
                 </CardContent>
             </Card>
-        </>
+        </Box>
     )
 
 }
@@ -188,11 +233,12 @@ TableCreator.propTypes = {
     pageTitle: PropTypes.string,
     tableTitle: PropTypes.string,
     tableShcema: PropTypes.object,
-    dataTable: PropTypes.object,
+    dataTable: PropTypes.array,
     totalCount: PropTypes.number,
     loading: PropTypes.bool,
     TPObject: PropTypes.object,
     errMessage: PropTypes.string,
     otherFunc: PropTypes.func,
     action: PropTypes.object,
+    useValue: PropTypes.array,
 }

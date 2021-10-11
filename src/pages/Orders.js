@@ -9,17 +9,33 @@ import { TablePaginationObject } from 'src/Core/Utils/TablePagination';
 import TableDataViewEnum from "src/Core/Utils/TableDataViewEnum";
 import { LICENSE_FORM_TYPES, REQUEST_STATUS } from 'src/utils/enums'
 import { useNavigate } from 'react-router';
-
+import { getMyTasksFun } from 'src/pages/services/data/servicesApi'
+import { useLocation } from 'react-router-dom'
+import { getTaheelRequestsFun } from 'src/pages/services/data/servicesApi'
+import { TabPanel } from 'src/Core/Components/FieldsInputs/TabPanel'
 
 const Orders = (props) => {
+    const location = useLocation()
     const navigate = useNavigate();
-    const { type } = props
     const [loading, setLoading] = useState(true);
     const [totalCount, setTotalCount] = useState();
     const [taheelRequests, setTaheelRequests] = useState([]);
     const [errMessage, SetErrMessage] = useState('')
-    const tableTitle = type === LICENSE_FORM_TYPES.DRAFT ? 'المسودات' : 'الطلبات المقدمة'
-    const TPObject = TablePaginationObject(TableDataViewEnum.ONLY_FIVE)
+    const TPObject = TablePaginationObject(TableDataViewEnum.ALL_DATA)
+    const tabsInfo = [
+        {
+            tableTitle: 'عرض الجميع',
+        },
+        {
+            tableTitle: 'المسودات',
+        },
+        {
+            tableTitle: 'الطلبات المعادة',
+        },
+    ]
+    const pageTitle = 'الطلبات'
+    const [value, setValue] = useState(0);
+
     const paramData = useMemo(() => {
         return {
             batchSize: TPObject.pagination.batchSize,
@@ -27,43 +43,43 @@ const Orders = (props) => {
         }
     }, [TPObject.pagination.batchSize, TPObject.pagination.startIndex])
 
-    const getTaheelRequestsFun = async (email, startIndex, batchSize) => {
-        const url = 'taheel-apis-records-getRequests-v2';
-        let queryParams = { userEmail: email, startIndex, batchSize };
-        console.log(`ORDERS ::1 queryParams ${JSON.stringify(queryParams)}`)
-        if(type === LICENSE_FORM_TYPES.DRAFT){
-            queryParams = {...queryParams, status: 4}
-        }
-        console.log(`ORDERS ::2 queryParams ${JSON.stringify(queryParams)}`)
-        const response = await APIRequest({ url, queryParams });
-        return response;
-    };
-
     useEffect(async () => {
+        SetErrMessage('')
         setLoading(true)
         const { email } = getCurrentUser();
-        const getTaheelRequestsRs = await getTaheelRequestsFun(email, paramData.startIndex, paramData.batchSize);
+        let getTaheelRequestsRs;
+
+        getTaheelRequestsRs = await getTaheelRequestsFun(email, paramData.startIndex, paramData.batchSize);
         let response = {};
         if (!getTaheelRequestsRs.isSuccessful) {
             setLoading(false);
-            SetErrMessage(getTaheelRequestsRs.message )
+            SetErrMessage(getTaheelRequestsRs.message)
             response = { isSuccessful: false, message: getTaheelRequestsRs.message };
         } else {
+            let allData = []
+            const data = getTaheelRequestsRs.responseBody.data.requests;
+            const drafts = data.filter(r => r.status === REQUEST_STATUS.DRAFT)
+            const filteredExtReq = data.filter(d => d.status === REQUEST_STATUS.RETERNED_REQ);
+            allData[0] = data
+            allData[1] = drafts
+            allData[2] = filteredExtReq
+            setTaheelRequests(allData);
             setLoading(false);
-            const data = getTaheelRequestsRs.responseBody.data;
-            setTotalCount(data.totalCount)
-            if(type === LICENSE_FORM_TYPES.DRAFT){
-                setTaheelRequests(data.requests);
-            }
-            else {
-                setTaheelRequests(data.requests.filter(r => r.status != REQUEST_STATUS.DRAFT));
-            }
         }
 
         return response;
-    }, [paramData.batchSize, paramData.startIndex, type]);
+    }, [paramData.batchSize, paramData.startIndex]);
     return (
-    <TableCreator tableTitle={tableTitle} tableShcema={ {...OrdersSchema(navigate), actions:''} } dataTable={taheelRequests} totalCount={totalCount} loading={loading} TPObject={TPObject} errMessage={errMessage}/>
+
+        <>
+            {tabsInfo.map((t, idx) => {
+                return (
+                    <TabPanel key={idx} value={value} index={idx}>
+                        <TableCreator key={idx} pageTitle={pageTitle} tableTitle={tabsInfo} useValue={[value, setValue]} tableShcema={{ ...OrdersSchema({ navigate }), actions: '' }} dataTable={taheelRequests[idx]} totalCount={taheelRequests[idx]?.length} loading={loading} TPObject={TPObject} errMessage={errMessage} />
+                    </TabPanel>
+                )
+            })}
+        </>
     )
 }
 

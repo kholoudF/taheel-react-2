@@ -1,64 +1,72 @@
 
 import { getCurrentUser } from 'src/utils/UserLocalStorage';
+import { APIRequest } from 'src/api/APIRequest';
+import { calculation } from '../../final-license/services/finalLicenseAPI';
 
-const getFurnitures = (values) => {
-	const furnitures = []
-	values.Furniture.map((docId, index) => {
-		furnitures.push({ Document: docId })
-	})
-	return furnitures
-}
+export const centerLocationTransferAPIFunc = async (values) => {
+	console.log('#==> valuesvaluesvalues ' + JSON.stringify(values))
+	const getFurnitures = (values) => {
+		const furnitures = []
+		values.Furniture && values.Furniture.map((docId, index) => {
+			furnitures.push({ Document: docId })
+		})
+		return furnitures
+	}
 
-const centerLocationTransferAPIFunc = async (values, actionType, TaskID) => {
-	const {  email } = getCurrentUser();
+	function numberToDay(day) {
+		return ('0' + day).slice(-2);
+	}
+	const { email } = getCurrentUser();
+	const { day, month, year } = values;
+	const expiryDate = year + '' + numberToDay(month) + numberToDay(day);
+
+
+	const res = await calculation(values.buildingArea, values.basementArea);
+	const financialGuarantee = res?.responseBody?.body?.financialGuarantee
 
 	const requestBody = {
-
-		"isDraft": false,
-		"userCreationEmail": email,
-		"center": {
-			"licenceNumber": values.temporaryLicenceNum,
-			"centerInfo_r": {
-				"ID": values.centerInfo_r,
-				"buildingArea": values.buildingArea,
-				"basementArea": values.basementArea,
-				"carryingnumber": values.capacity,
-				"furniturePhoto_r": [
-					{
-						"Document": values.docId,
-					}
-				],
-				"fireDepartmentLicense": "///Document///",
-				"expirarionDateForFireDepartmentLicenseGreg": "///Date Object///",
-				"engineeringPlan": values.OfficeReport[0],
+		serviceStatus: 1,
+		isDraft: values.isDraft,
+		userCreationEmail: email,
+		center: {
+			licenceNumber: values.centerLicenceNumber,
+			centerInfo_r: {
+				financialGuarantee: financialGuarantee,
+				ID: values.centerInfo_r,
+				buildingArea: values.buildingArea,
+				basementArea: values.basementArea,
+				carryingnumber: values.capacity,
+				furniturePhoto_r: getFurnitures(values),
+				fireDepartmentLicense: !!values?.fireDepartmentLicense && values?.fireDepartmentLicense[0],
+				expirarionDateForFireDepartmentLicenseHijri: expiryDate,
+				engineeringPlan: !!values?.OfficeReport && values?.OfficeReport[0],
+				momraDoc: !!values?.municipLicenseNo && values?.municipLicenseNo[0],
 			},
-			"centerLocation_r": {
-				"city": values.city,
-				"area": values.sub,
-				"street": values.street,
-				"buildNo": values.buildNo,
-				"lat": values.lat,
-				"lng": values.lng,
-				"postalCode": values.postalCode,
-				"additionalNo": values.additionalNo,
+			centerLocation_r: {
+				city: values.city,
+				area: values.sub,
+				street: values.street,
+				buildNo: values.buildNo,
+				lat: values.lat,
+				lng: values.lng,
+				postalCode: values.postalCode,
+				additionalNo: values.additionalNo,
 			}
 		}
 	}
+	if (!!values.taskID) {
+		requestBody.serviceStatus = 2
+		requestBody.externalUserTaskID = values.taskID
+	}
+	if (values.isDraft) {
+		requestBody.draft_values = { temporaryLicenceNum: values.licenceNumber, ...values }
+	}
+	let url = "taheel-apis-services-initiate-center-location-change-request";
 
-let url = "taheel-apis-services-initiate-center-location-change-request";
-// if (actionType === LICENSE_FORM_TYPES.RENEW) {
-// 	url = "taheel-apis-services-renewLicenseV2";
-// }
-// else if (actionType === LICENSE_FORM_TYPES.EDIT) {
-// 	requestBody.externalUserTaskID = TaskID
-// 	requestBody.cancel = "false"
-// 	url = "taheel-apis-services-continueFinalLicense-v2";
-// }
-
-console.log('#==> requestBody ' + JSON.stringify(requestBody))
-// return '';
-const response = await APIRequest({ requestBody, url });
-return response;
+	console.log('#==> requestBody ' + JSON.stringify(requestBody))
+	const response = await APIRequest({ requestBody, url });
+	// const response = {isSuccessful:false, message:"DUMMY"}
+	return response;
 }
 
-export { centerLocationTransferAPIFunc };
+// export { centerLocationTransferAPIFunc };

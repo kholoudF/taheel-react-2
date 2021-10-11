@@ -47,7 +47,7 @@ export default
         ar: 'الطاقة الاستعابية',
         en: 'capacity'
       },
-      name: 'capacity',
+      name: 'newCapacity',
       type: 'Text',
       gridSize: '6',
       sectionName: 'CenterDetails',
@@ -102,7 +102,7 @@ export default
         ar: "رخصة البلدية (للمبنى الجديد)",
         en: 'municip License'
       },
-      name: 'municipLicense',
+      name: 'municipLicenseNo',
       type: 'file',
       gridSize: '6',
       sectionName: 'Requirements',
@@ -126,9 +126,9 @@ export default
       id: uuid(),
       label: {
         ar: "رخصة دفاع المدني (للمبنى الجديد)",
-        en: 'civil Defense License'
+        en: 'fire Department License'
       },
-      name: 'CivilDefenseLicense',
+      name: 'fireDepartmentLicense',
       type: 'file',
       gridSize: '6',
       sectionName: 'Requirements',
